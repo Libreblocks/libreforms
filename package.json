@@ -1,0 +1,13 @@
+{
+  "name": "libreforms",
+  "version": "0.1.0",
+  "private": true,
+  "license": "GPL-2.0-or-later",
+  "scripts": {
+    "build": "wp-scripts build assets/src/admin/admin.js assets/src/blocks/blocks.js --output-path=build",
+    "start": "wp-scripts start assets/src/admin/admin.js assets/src/blocks/blocks.js --output-path=build"
+  },
+  "devDependencies": {
+    "@wordpress/scripts": "^30.0.0"
+  }
+}

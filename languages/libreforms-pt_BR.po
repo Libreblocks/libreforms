@@ -1,0 +1,505 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: LibreForms 0.1.0\n"
+"Language: pt_BR\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"X-Domain: libreforms\n"
+
+# LibreForms 0.1.0
+msgid "\"Pending review\" lets you approve before it appears on the site."
+msgstr "\"Aguardando revisão\" permite aprovar antes de aparecer no site."
+
+msgid "(no title)"
+msgstr "(sem título)"
+
+msgid "0 = no limit."
+msgstr "0 = sem limite."
+
+msgid "Accent color"
+msgstr "Cor de destaque"
+
+msgid "Actions"
+msgstr "Ações"
+
+msgid "Add action:"
+msgstr "Adicionar ação:"
+
+msgid "Address of the post created by the form"
+msgstr "Endereço do post criado pelo formulário"
+
+msgid "Advanced settings"
+msgstr "Configurações avançadas"
+
+msgid "After sending"
+msgstr "Depois de enviar"
+
+msgid "After sending, the visitor goes to a thank-you page."
+msgstr "Depois de enviar, o visitante vai para uma página de agradecimento."
+
+msgid "Alignment"
+msgstr "Alinhamento"
+
+msgid "Answers go to the custom fields with the same name. Ex.: a form field \"price\" fills the Meta Box field \"price\"."
+msgstr "As respostas vão para os campos personalizados com o mesmo nome. Ex.: o campo \"preco\" do formulário preenche o campo \"preco\" do Meta Box."
+
+msgid "Anywhere else, the shortcode:"
+msgstr "Em qualquer outro lugar, o shortcode:"
+
+msgid "Background"
+msgstr "Fundo"
+
+msgid "Border color"
+msgstr "Cor da borda"
+
+msgid "Button"
+msgstr "Botão"
+
+msgid "Button text"
+msgstr "Texto do botão"
+
+msgid "Center"
+msgstr "Centro"
+
+msgid "Choose a form (LibreForms → Forms)."
+msgstr "Escolha um formulário (LibreForms → Formulários)."
+
+msgid "Choose the post type to create."
+msgstr "Escolha o post type que será criado."
+
+msgid "Click to copy"
+msgstr "Clique para copiar"
+
+msgid "Clicking \"Reply\" in your e-mail answers the visitor."
+msgstr "Ao clicar em \"Responder\" no seu e-mail, a resposta vai para o visitante."
+
+msgid "Contact"
+msgstr "Contato"
+
+msgid "Contact, quote request, sign-up, \"send your property\"… Choose the fields, then what happens after sending: e-mail, saved entry, new post."
+msgstr "Contato, pedido de orçamento, cadastro, \"anuncie seu imóvel\"… Escolha os campos e depois o que acontece ao enviar: e-mail, resposta salva, novo post."
+
+msgid "Content comes from"
+msgstr "Conteúdo vem de"
+
+msgid "Create a form first. Its answers will appear here."
+msgstr "Crie um formulário primeiro. As respostas dele aparecerão aqui."
+
+msgid "Create a post"
+msgstr "Criar um post"
+
+msgid "Create form"
+msgstr "Criar formulário"
+
+msgid "Create forms in LibreForms → Forms."
+msgstr "Crie formulários em LibreForms → Formulários."
+
+msgid "Create your first form"
+msgstr "Crie seu primeiro formulário"
+
+msgid "Create your first form in LibreForms → Forms, then choose it here."
+msgstr "Crie seu primeiro formulário em LibreForms → Formulários e depois escolha-o aqui."
+
+msgid "Date"
+msgstr "Data"
+
+msgid "Delete"
+msgstr "Excluir"
+
+msgid "Delete this entry? This cannot be undone."
+msgstr "Excluir esta resposta? Não é possível desfazer."
+
+msgid "Delete this form? The entries already received stay in LibreForms → Entries."
+msgstr "Excluir este formulário? As respostas já recebidas continuam em LibreForms → Respostas."
+
+msgid "Draft"
+msgstr "Rascunho"
+
+msgid "Elementor: drag the \"Form\" widget (LibreForge category)."
+msgstr "Elementor: arraste o widget \"Formulário\" (categoria LibreForge)."
+
+msgid "Empty = \"New submission: form title\"."
+msgstr "Vazio = \"Novo envio: título do formulário\"."
+
+msgid "Empty = a table with every answer."
+msgstr "Vazio = uma tabela com todas as respostas."
+
+msgid "Entries"
+msgstr "Respostas"
+
+msgid "Every answer, as a table"
+msgstr "Todas as respostas, em tabela"
+
+msgid "Every value sent, as a table"
+msgstr "Todos os valores enviados, em tabela"
+
+msgid "Ex.: https://yoursite.com/thank-you"
+msgstr "Ex.: https://seusite.com.br/obrigado"
+
+msgid "Export CSV"
+msgstr "Exportar CSV"
+
+msgid "Featured image comes from"
+msgstr "Imagem destacada vem de"
+
+msgid "Field background"
+msgstr "Fundo dos campos"
+
+msgid "Field name"
+msgstr "Nome do campo"
+
+msgid "Fields"
+msgstr "Campos"
+
+msgid "Fill the Meta Box fields"
+msgstr "Preencher os campos do Meta Box"
+
+msgid "Form"
+msgstr "Formulário"
+
+msgid "Form fields"
+msgstr "Campos do formulário"
+
+msgid "Form name"
+msgstr "Nome do formulário"
+
+msgid "Form title"
+msgstr "Título do formulário"
+
+msgid "Forms"
+msgstr "Formulários"
+
+msgid "Forms already block robots without annoying captchas: a hidden trap field, a minimum time to fill in and a limit per hour."
+msgstr "Os formulários já bloqueiam robôs sem captchas chatos: um campo-armadilha escondido, um tempo mínimo de preenchimento e um limite por hora."
+
+msgid "General settings"
+msgstr "Configurações gerais"
+
+msgid "Go to another page"
+msgstr "Ir para outra página"
+
+msgid "Gutenberg: add the \"Form\" block and choose this form."
+msgstr "Gutenberg: adicione o bloco \"Formulário\" e escolha este formulário."
+
+msgid "Hide the form after sending"
+msgstr "Esconder o formulário após o envio"
+
+msgid "Internal name of the form. Filled in automatically."
+msgstr "Nome interno do formulário. Preenchido automaticamente."
+
+msgid "Keeps a copy in LibreForms → Entries, with CSV export."
+msgstr "Guarda uma cópia em LibreForms → Respostas, com exportação em CSV."
+
+msgid "Labels"
+msgstr "Rótulos"
+
+msgid "Leave this field empty"
+msgstr "Deixe este campo vazio"
+
+msgid "Left"
+msgstr "Esquerda"
+
+msgid "LibreForms needs LibreForge %s or newer. Please update LibreForge."
+msgstr "O LibreForms precisa do LibreForge %s ou mais recente. Atualize o LibreForge."
+
+msgid "LibreForms needs the LibreBlocks Core and LibreForge plugins. Please install and activate them."
+msgstr "O LibreForms precisa dos plugins LibreBlocks Core e LibreForge. Instale e ative-os."
+
+msgid "Manage forms"
+msgstr "Gerenciar formulários"
+
+msgid "Message"
+msgstr "Mensagem"
+
+msgid "Message after sending"
+msgstr "Mensagem após o envio"
+
+msgid "Minimum time to fill in (seconds)"
+msgstr "Tempo mínimo de preenchimento (segundos)"
+
+msgid "New"
+msgstr "Nova"
+
+msgid "New form"
+msgstr "Novo formulário"
+
+msgid "New submission: %s"
+msgstr "Novo envio: %s"
+
+msgid "No actions: the answers will not be saved or sent anywhere."
+msgstr "Sem ações: as respostas não serão salvas nem enviadas para lugar nenhum."
+
+msgid "No entries yet"
+msgstr "Nenhuma resposta ainda"
+
+msgid "No forms yet"
+msgstr "Nenhum formulário ainda"
+
+msgid "Nothing to set up: every answer appears in LibreForms → Entries."
+msgstr "Nada para configurar: todas as respostas aparecem em LibreForms → Respostas."
+
+msgid "Older →"
+msgstr "Mais antigas →"
+
+msgid "One or more e-mails separated by commas. To answer the visitor, use {{form.value|email}}."
+msgstr "Um ou mais e-mails separados por vírgula. Para enviar ao visitante, use {{form.value|email}}."
+
+msgid "Only logged-in users"
+msgstr "Somente usuários logados"
+
+msgid "Only the message stays on the page."
+msgstr "Só a mensagem fica na página."
+
+msgid "Only you see it. Ex.: Contact, Quote request"
+msgstr "Só você vê. Ex.: Contato, Pedido de orçamento"
+
+msgid "Open file"
+msgstr "Abrir arquivo"
+
+msgid "Page"
+msgstr "Página"
+
+msgid "Page %1$d of %2$d"
+msgstr "Página %1$d de %2$d"
+
+msgid "Page address"
+msgstr "Endereço da página"
+
+msgid "Pending review"
+msgstr "Aguardando revisão"
+
+msgid "Per hour"
+msgstr "Por hora"
+
+msgid "Please %s to fill in this form."
+msgstr "Por favor, %s para preencher este formulário."
+
+msgid "Please check the highlighted fields."
+msgstr "Confira os campos destacados."
+
+msgid "Please log in to fill in this form."
+msgstr "Faça login para preencher este formulário."
+
+msgid "Post Type"
+msgstr "Post Type"
+
+msgid "Post created"
+msgstr "Post criado"
+
+msgid "Private"
+msgstr "Privado"
+
+msgid "Published"
+msgstr "Publicado"
+
+msgid "Remove action"
+msgstr "Remover ação"
+
+msgid "Reply goes to"
+msgstr "Resposta vai para"
+
+msgid "Right"
+msgstr "Direita"
+
+msgid "Robots send forms instantly. 0 turns it off."
+msgstr "Robôs enviam formulários na hora. 0 desliga."
+
+msgid "Rounded corners"
+msgstr "Cantos arredondados"
+
+msgid "Save the entry"
+msgstr "Salvar a resposta"
+
+msgid "Seconds"
+msgstr "Segundos"
+
+msgid "See everything"
+msgstr "Ver tudo"
+
+msgid "See the entries"
+msgstr "Ver as respostas"
+
+msgid "Send"
+msgstr "Enviar"
+
+msgid "Send an e-mail"
+msgstr "Enviar um e-mail"
+
+msgid "Send to"
+msgstr "Enviar para"
+
+msgid "Send to a webhook"
+msgstr "Enviar para um webhook"
+
+msgid "Sending…"
+msgstr "Enviando…"
+
+msgid "Sends the answers as JSON to n8n, Zapier, Make, a CRM…"
+msgstr "Envia as respostas em JSON para n8n, Zapier, Make, um CRM…"
+
+msgid "Sent from"
+msgstr "Enviado de"
+
+msgid "Show it on the site"
+msgstr "Mostrar no site"
+
+msgid "Shown to the visitor when everything worked."
+msgstr "Mostrada ao visitante quando tudo deu certo."
+
+msgid "Shows a form made in LibreForms."
+msgstr "Mostra um formulário feito no LibreForms."
+
+msgid "Space between fields"
+msgstr "Espaço entre os campos"
+
+msgid "Spam protection"
+msgstr "Proteção contra spam"
+
+msgid "Status"
+msgstr "Status"
+
+msgid "Subject"
+msgstr "Assunto"
+
+msgid "Submissions per hour per visitor"
+msgstr "Envios por hora por visitante"
+
+msgid "Text color"
+msgstr "Cor do texto"
+
+msgid "Thank you! Your message was sent."
+msgstr "Obrigado! Sua mensagem foi enviada."
+
+msgid "The answers are sent as JSON with a POST request."
+msgstr "As respostas são enviadas em JSON numa requisição POST."
+
+msgid "The e-mail action needs a recipient."
+msgstr "A ação de e-mail precisa de um destinatário."
+
+msgid "The field \"%s\" uses a type that forms do not support yet."
+msgstr "O campo \"%s\" usa um tipo que os formulários ainda não aceitam."
+
+msgid "The file could not be uploaded."
+msgstr "Não foi possível enviar o arquivo."
+
+msgid "The file is too big (maximum %s MB)."
+msgstr "O arquivo é grande demais (máximo de %s MB)."
+
+msgid "The form could not be sent. Please try again."
+msgstr "Não foi possível enviar o formulário. Tente novamente."
+
+msgid "The form was sent too fast. Please wait a moment and try again."
+msgstr "O formulário foi enviado rápido demais. Aguarde um instante e tente novamente."
+
+msgid "The name \"%s\" is used by the form itself. Choose another one."
+msgstr "O nome \"%s\" é usado pelo próprio formulário. Escolha outro."
+
+msgid "The title is required."
+msgstr "O título é obrigatório."
+
+msgid "The webhook needs a valid address (https://…)."
+msgstr "O webhook precisa de um endereço válido (https://…)."
+
+msgid "This field is required."
+msgstr "Este campo é obrigatório."
+
+msgid "This form no longer exists."
+msgstr "Este formulário não existe mais."
+
+msgid "This type of file is not accepted."
+msgstr "Este tipo de arquivo não é aceito."
+
+msgid "Title comes from"
+msgstr "Título vem de"
+
+msgid "To you, to the team or to the visitor."
+msgstr "Para você, para a equipe ou para o visitante."
+
+msgid "Too many submissions. Please try again later."
+msgstr "Envios demais. Tente novamente mais tarde."
+
+msgid "Turns the answers into a post of any Post Type (front-end submission)."
+msgstr "Transforma as respostas em um post de qualquer Post Type (envio pelo site)."
+
+msgid "Typed text"
+msgstr "Texto digitado"
+
+msgid "Use the answers in the texts: click to copy."
+msgstr "Use as respostas nos textos: clique para copiar."
+
+msgid "User"
+msgstr "Usuário"
+
+msgid "Value sent in the form"
+msgstr "Valor enviado no formulário"
+
+msgid "Visitors see a link to log in instead of the form."
+msgstr "Visitantes veem um link para fazer login no lugar do formulário."
+
+msgid "Webhook address"
+msgstr "Endereço do webhook"
+
+msgid "What happens when someone sends the form. They run in this order."
+msgstr "O que acontece quando alguém envia o formulário. As ações rodam nesta ordem."
+
+msgid "What the visitor fills in. The name of each field is how its answer is saved (and which Meta Box field it fills)."
+msgstr "O que o visitante preenche. O nome de cada campo é como a resposta é salva (e qual campo do Meta Box ela preenche)."
+
+msgid "When someone sends this form (with the \"Save the entry\" action), the answers appear here."
+msgstr "Quando alguém enviar este formulário (com a ação \"Salvar a resposta\"), as respostas aparecem aqui."
+
+msgid "Which form do you want to show?"
+msgstr "Qual formulário você quer mostrar?"
+
+msgid "Which kind of content is created."
+msgstr "Qual tipo de conteúdo será criado."
+
+msgid "You are not allowed to do this."
+msgstr "Você não tem permissão para isso."
+
+msgid "Your session expired. Reload the page and try again."
+msgstr "Sua sessão expirou. Recarregue a página e tente novamente."
+
+msgid "form"
+msgstr "formulário"
+
+msgid "log in"
+msgstr "faça login"
+
+msgid "— Choose —"
+msgstr "— Escolha —"
+
+msgid "— Empty —"
+msgstr "— Vazio —"
+
+msgid "— Form title and date —"
+msgstr "— Título do formulário e data —"
+
+msgid "— Nobody —"
+msgstr "— Ninguém —"
+
+msgid "— None —"
+msgstr "— Nenhuma —"
+
+msgid "— Select —"
+msgstr "— Selecione —"
+
+msgid "← Newer"
+msgstr "← Mais recentes"
+
+msgid "%d entry"
+msgid_plural "%d entries"
+msgstr[0] "%d resposta"
+msgstr[1] "%d respostas"
+
+msgid "%d field"
+msgid_plural "%d fields"
+msgstr[0] "%d campo"
+msgstr[1] "%d campos"
+
+msgid "%d new"
+msgid_plural "%d new"
+msgstr[0] "%d nova"
+msgstr[1] "%d novas"

@@ -1,0 +1,166 @@
+/* LibreForms admin, on top of the LibreForge editor styles. */
+
+.lbf-action {
+	margin: 0 0 12px;
+	padding: 16px;
+
+	&.has-error {
+		border-color: #d63638;
+	}
+
+	&__head {
+		display: flex;
+		align-items: center;
+		gap: 12px;
+		margin-bottom: 12px;
+	}
+
+	&__title {
+		display: flex;
+		flex: 1;
+		flex-direction: column;
+
+		small {
+			color: #646970;
+		}
+	}
+}
+
+.lbf-add-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px;
+	margin-top: 8px;
+
+	> span {
+		color: #646970;
+	}
+}
+
+.lbf-warning {
+	padding: 10px 12px;
+	border-left: 4px solid #dba617;
+	background: #fcf9e8;
+}
+
+.lbf-tokens {
+	margin-top: 16px;
+	padding: 12px;
+	border-radius: 8px;
+	background: #f6f7f7;
+
+	p {
+		margin: 0 0 8px;
+		color: #646970;
+	}
+
+	&__list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 6px;
+	}
+
+	code {
+		cursor: copy;
+		border-radius: 4px;
+	}
+}
+
+.lbf-embed {
+	ol {
+		margin: 0 0 0 18px;
+	}
+
+	li {
+		margin-bottom: 8px;
+	}
+
+	code {
+		display: block;
+		margin-top: 4px;
+		padding: 6px 8px;
+		cursor: copy;
+		word-break: break-all;
+	}
+}
+
+.lbf-entries {
+	padding: 0;
+	overflow-x: auto;
+
+	&__table {
+		width: 100%;
+		border-collapse: collapse;
+
+		th,
+		td {
+			padding: 12px 16px;
+			border-bottom: 1px solid #f0f0f1;
+			text-align: left;
+			vertical-align: top;
+		}
+
+		th {
+			color: #50575e;
+			font-weight: 600;
+		}
+
+		tbody tr:not(.lbf-entries__detail) {
+			cursor: pointer;
+
+			&:hover {
+				background: #f6f7f7;
+			}
+		}
+
+		tr.is-new td {
+			font-weight: 600;
+		}
+	}
+
+	&__actions {
+		width: 1%;
+		white-space: nowrap;
+	}
+
+	&__detail {
+		background: #f6f7f7;
+
+		dl {
+			display: grid;
+			grid-template-columns: minmax(140px, max-content) 1fr;
+			gap: 8px 24px;
+			margin: 0;
+		}
+
+		dt {
+			color: #50575e;
+			font-weight: 600;
+		}
+
+		dd {
+			margin: 0;
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+	}
+}
+
+.lbf-dot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	margin-right: 8px;
+	border-radius: 50%;
+	background: #3858e9;
+	vertical-align: middle;
+}
+
+.lbf-pager {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 16px;
+	margin-top: 16px;
+}
