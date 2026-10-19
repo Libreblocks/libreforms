@@ -83,3 +83,7 @@ if ( ! class_exists( 'WP_Error' ) ) {
 }
 function get_post( $post = null ) { return is_object( $post ) ? $post : ( WPStub::$registered['posts'][ (int) $post ] ?? null ); }
 function wp_validate_redirect( $location, $fallback = '' ) { return 0 === strpos( (string) $location, 'https://example.test' ) ? $location : $fallback; }
+function get_posts( $args = [] ) {
+	return array_values( array_filter( WPStub::$registered['posts'] ?? [], fn( $p ) => in_array( $p->post_type, (array) ( $args['post_type'] ?? [ 'post' ] ), true ) && 'publish' === $p->post_status ) );
+}
+function selected( $a, $b, $echo = true ) { return (string) $a === (string) $b ? ' selected="selected"' : ''; }
