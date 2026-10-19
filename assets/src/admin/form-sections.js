@@ -47,7 +47,7 @@ const BUILT_IN = {
  *
  *     wp.hooks.addFilter( 'libreforms.actionTypes', 'my-plugin', ( types ) => ( {
  *         ...types,
- *         my_action: { label, help, icon, defaults: {}, Settings: ( { settings, set, config, environment } ) => … },
+ *         my_action: { label, help, icon, defaults: {}, Settings: ( { settings, set, config, setConfig, environment } ) => … },
  *     } ) );
  */
 export const actionTypes = () => applyFilters( 'libreforms.actionTypes', BUILT_IN );
@@ -131,14 +131,14 @@ function TokenHelp( { fields } ) {
 	);
 }
 
-function ActionSettings( { action, set, config, environment } ) {
+function ActionSettings( { action, set, config, setConfig, environment } ) {
 	const fields = config.fields || [];
 
 	const extra = actionTypes()[ action.type ];
 
 	if ( extra?.Settings && ! BUILT_IN[ action.type ] ) {
 		const Settings = extra.Settings;
-		return <Settings settings={ action.settings || {} } set={ ( patch ) => set( { settings: { ...( action.settings || {} ), ...patch } } ) } config={ config } environment={ environment } />;
+		return <Settings settings={ action.settings || {} } set={ ( patch ) => set( { settings: { ...( action.settings || {} ), ...patch } } ) } config={ config } setConfig={ setConfig } environment={ environment } />;
 	}
 
 	switch ( action.type ) {
@@ -232,7 +232,7 @@ function Actions( { config, set, errors, environment } ) {
 							<Button icon="trash" size="small" isDestructive label={ __( 'Remove action', 'libreforms' ) } onClick={ () => remove( index ) } />
 						</div>
 						{ error && <p className="lf-row__error">{ error }</p> }
-						<ActionSettings action={ action } set={ ( patch ) => update( index, patch ) } config={ config } environment={ environment } />
+						<ActionSettings action={ action } set={ ( patch ) => update( index, patch ) } config={ config } setConfig={ set } environment={ environment } />
 					</div>
 				);
 			} ) }

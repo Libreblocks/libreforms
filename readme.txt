@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.0
 Requires Plugins: libreblocks-core, libreforge
-Stable tag: 0.2.0
+Stable tag: 0.2.1
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,9 @@ Also:
 Requires LibreBlocks Core and LibreForge.
 
 == Changelog ==
+
+= 0.2.1 =
+* Actions added by other plugins can change the form (used by LibreStay to add its dates field with one click).
 
 = 0.2.0 =
 * Other plugins can add field types and actions to forms (used by LibreStay: "Check-in and check-out" field and "Create booking" action).

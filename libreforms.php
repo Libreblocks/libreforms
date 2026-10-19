@@ -3,7 +3,7 @@
  * Plugin Name:       LibreForms
  * Plugin URI:        https://libreblocks.com/libreforms
  * Description:       Form builder: contact forms, sign-ups and front-end submissions that create posts, with e-mails, saved entries and webhooks.
- * Version:           0.2.0
+ * Version:           0.2.1
  * Requires at least: 6.6
  * Requires PHP:      8.0
  * Requires Plugins:  libreblocks-core, libreforge
@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'LIBREFORMS_VERSION', '0.2.0' );
+define( 'LIBREFORMS_VERSION', '0.2.1' );
 define( 'LIBREFORMS_FILE', __FILE__ );
 define( 'LIBREFORMS_DIR', plugin_dir_path( __FILE__ ) );
 define( 'LIBREFORMS_URL', plugin_dir_url( __FILE__ ) );
