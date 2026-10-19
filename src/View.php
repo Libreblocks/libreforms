@@ -18,6 +18,7 @@ final class View {
 	public const HONEYPOT = 'lbf_website';
 	public const TIMER    = '_lbf_t';
 	public const NONCE    = '_lbf_nonce';
+	public const OBJECT   = '_lbf_object';
 
 	/** @var array<int, array<string, mixed>> Result of a non-JS submission, by form id. */
 	private array $results = [];
@@ -102,7 +103,7 @@ final class View {
 				. '<input type="hidden" name="action" value="lbforms_submit" />'
 				. '<input type="hidden" name="lbforms_id" value="%3$d" />'
 				. '<input type="hidden" name="%4$s" value="%5$s" />'
-				. '<input type="hidden" name="_lbf_ref" value="%6$s" />%12$s'
+				. '<input type="hidden" name="_lbf_ref" value="%6$s" />%12$s%14$s'
 				. '<div class="lbf-fields">%7$s</div>'
 				. '<div class="lbf-hp" aria-hidden="true"><label>%8$s <input type="text" name="%9$s" value="" tabindex="-1" autocomplete="off" /></label></div>'
 				. '<div class="lbf-footer"><button type="submit" class="lbf-submit wp-element-button">%10$s</button></div>'
@@ -121,7 +122,8 @@ final class View {
 			$message,
 			// Logged-in submissions act as the user: protect them against forged requests.
 			is_user_logged_in() ? '<input type="hidden" name="' . esc_attr( self::NONCE ) . '" value="' . esc_attr( wp_create_nonce( self::NONCE ) ) . '" />' : '',
-			$form->get( 'hide_on_success', true ) ? ' data-hide-on-success' : ''
+			$form->get( 'hide_on_success', true ) ? ' data-hide-on-success' : '',
+			$this->object_input()
 		);
 	}
 
@@ -232,6 +234,21 @@ final class View {
 				return sprintf( '<input type="file" id="%1$s" name="%2$s"%3$s%4$s />', esc_attr( $id ), $name, '' !== $accept ? ' accept="' . esc_attr( $accept ) . '"' : '', $required . $aria );
 
 			default:
+				/**
+				 * HTML of a field type added by another plugin (filter "libreforms/front_types").
+				 *
+				 * @param string|null $html  Null = render as a text box.
+				 * @param Field       $field
+				 * @param string      $id    HTML id of the control.
+				 * @param mixed       $value
+				 * @param string      $attrs required/aria attributes to add.
+				 */
+				$custom = apply_filters( 'libreforms/control', null, $field, $id, $value, $required . $aria );
+
+				if ( is_string( $custom ) ) {
+					return $custom;
+				}
+
 				$types = [ 'email' => 'email', 'url' => 'url', 'number' => 'number', 'date' => 'date', 'time' => 'time', 'datetime' => 'datetime-local', 'color' => 'color' ];
 				$type  = $types[ $field->type ] ?? 'text';
 				$extra = '';
@@ -261,6 +278,20 @@ final class View {
 					$autocomplete ? ' autocomplete="' . $autocomplete . '"' : ''
 				);
 		}
+	}
+
+	/**
+	 * The item the form sits on (a property, a room...), for actions that need it.
+	 */
+	private function object_input(): string {
+		$object = libreblocks()->context()->current();
+
+		if ( ! $object instanceof \WP_Post ) {
+			$id     = isset( $_GET['post_id'] ) ? absint( $_GET['post_id'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification.Recommended -- block editor preview.
+			$object = $id ? get_post( $id ) : null;
+		}
+
+		return $object instanceof \WP_Post ? sprintf( '<input type="hidden" name="%s" value="%d" />', esc_attr( self::OBJECT ), $object->ID ) : '';
 	}
 
 	private function conditions( Field $field ): string {

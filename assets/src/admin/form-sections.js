@@ -3,16 +3,18 @@
  * Rows and the field builder come from LibreForge so every editor feels the same.
  */
 import { Button, TextareaControl, TextControl } from '@wordpress/components';
+import { applyFilters } from '@wordpress/hooks';
 import { __ } from '@wordpress/i18n';
 
 import { IconTile, SettingRow } from '@libreblocks/ui';
 
 import FieldBuilder from '@libreforge/admin/field-builder';
+import { CheckboxList } from '@libreforge/admin/components';
 import { Choose, followSlug, Identifier, LongText, Text, Toggle } from '@libreforge/admin/forms';
 
 const data = window.libreformsAdmin || { types: [], adminEmail: '' };
 
-export const ACTION_TYPES = {
+const BUILT_IN = {
 	save_entry: {
 		label: __( 'Save the entry', 'libreforms' ),
 		help: __( 'Keeps a copy in LibreForms → Entries, with CSV export.', 'libreforms' ),
@@ -40,12 +42,37 @@ export const ACTION_TYPES = {
 	},
 };
 
+/**
+ * Built-in actions plus the ones other plugins add with:
+ *
+ *     wp.hooks.addFilter( 'libreforms.actionTypes', 'my-plugin', ( types ) => ( {
+ *         ...types,
+ *         my_action: { label, help, icon, defaults: {}, Settings: ( { settings, set, config, environment } ) => … },
+ *     } ) );
+ */
+export const actionTypes = () => applyFilters( 'libreforms.actionTypes', BUILT_IN );
+
+/** Details the visitor does not type, listed at the end of the e-mail. */
+const META = [
+	{ value: 'date', label: __( 'Date', 'libreforms' ) },
+	{ value: 'time', label: __( 'Time', 'libreforms' ) },
+	{ value: 'page_url', label: __( 'Page URL', 'libreforms' ) },
+	{ value: 'item', label: __( 'Item of the page', 'libreforms' ) },
+	{ value: 'user', label: __( 'Logged-in user', 'libreforms' ) },
+	{ value: 'user_agent', label: __( 'Browser (user agent)', 'libreforms' ) },
+	{ value: 'ip', label: __( 'IP address', 'libreforms' ) },
+	{ value: 'form', label: __( 'Form name', 'libreforms' ) },
+];
+
+const META_DEFAULT = [ 'date', 'time', 'page_url' ];
+
 export const newAction = ( type ) => ( {
 	type,
 	to: type === 'email' ? data.adminEmail : '',
 	subject: '',
 	message: '',
 	reply_to: '',
+	meta: META_DEFAULT,
 	post_type: '',
 	status: 'pending',
 	title_field: '',
@@ -53,6 +80,7 @@ export const newAction = ( type ) => ( {
 	image_field: '',
 	save_meta: true,
 	url: '',
+	settings: { ...( actionTypes()[ type ]?.defaults || {} ) },
 } );
 
 export const FORM_DEFAULTS = {
@@ -93,6 +121,11 @@ function TokenHelp( { fields } ) {
 				<code title={ __( 'Form title', 'libreforms' ) } onClick={ () => navigator.clipboard?.writeText( '{{form.title}}' ) }>
 					{ '{{form.title}}' }
 				</code>
+				{ META.map( ( item ) => (
+					<code key={ item.value } title={ item.label } onClick={ () => navigator.clipboard?.writeText( `{{form.meta|${ item.value }}}` ) }>
+						{ `{{form.meta|${ item.value }}}` }
+					</code>
+				) ) }
 			</div>
 		</div>
 	);
@@ -100,6 +133,13 @@ function TokenHelp( { fields } ) {
 
 function ActionSettings( { action, set, config, environment } ) {
 	const fields = config.fields || [];
+
+	const extra = actionTypes()[ action.type ];
+
+	if ( extra?.Settings && ! BUILT_IN[ action.type ] ) {
+		const Settings = extra.Settings;
+		return <Settings settings={ action.settings || {} } set={ ( patch ) => set( { settings: { ...( action.settings || {} ), ...patch } } ) } config={ config } environment={ environment } />;
+	}
 
 	switch ( action.type ) {
 		case 'save_entry':
@@ -112,6 +152,9 @@ function ActionSettings( { action, set, config, environment } ) {
 					<Text label={ __( 'Subject', 'libreforms' ) } help={ __( 'Empty = "New submission: form title".', 'libreforms' ) } value={ action.subject } onChange={ ( subject ) => set( { subject } ) } />
 					<SettingRow label={ __( 'Message', 'libreforms' ) } help={ __( 'Empty = a table with every answer.', 'libreforms' ) }>
 						<TextareaControl label={ __( 'Message', 'libreforms' ) } hideLabelFromVision rows={ 5 } value={ action.message } onChange={ ( message ) => set( { message } ) } __nextHasNoMarginBottom />
+					</SettingRow>
+					<SettingRow label={ __( 'Submission details', 'libreforms' ) } help={ __( 'Listed at the end of the e-mail. The visitor does not fill them in. The IP address is personal data: only include it if you need it.', 'libreforms' ) }>
+						<CheckboxList options={ META } value={ action.meta ?? META_DEFAULT } onChange={ ( meta ) => set( { meta } ) } />
 					</SettingRow>
 					<Choose label={ __( 'Reply goes to', 'libreforms' ) } help={ __( 'Clicking "Reply" in your e-mail answers the visitor.', 'libreforms' ) } value={ action.reply_to } options={ fieldOptions( fields, [ 'email' ], __( '— Nobody —', 'libreforms' ) ) } onChange={ ( reply_to ) => set( { reply_to } ) } />
 				</>
@@ -166,6 +209,7 @@ function Actions( { config, set, errors, environment } ) {
 	const update = ( index, patch ) => set( { actions: actions.map( ( action, i ) => ( i === index ? { ...action, ...patch } : action ) ) } );
 	const remove = ( index ) => set( { actions: actions.filter( ( _, i ) => i !== index ) } );
 	const add = ( type ) => set( { actions: [ ...actions, newAction( type ) ] } );
+	const types = actionTypes();
 
 	return (
 		<>
@@ -174,7 +218,7 @@ function Actions( { config, set, errors, environment } ) {
 			{ actions.length === 0 && <p className="lbf-warning">{ __( 'No actions: the answers will not be saved or sent anywhere.', 'libreforms' ) }</p> }
 
 			{ actions.map( ( action, index ) => {
-				const meta = ACTION_TYPES[ action.type ] || {};
+				const meta = types[ action.type ] || { label: action.type };
 				const error = errors[ `actions.${ index }` ];
 
 				return (
@@ -195,7 +239,7 @@ function Actions( { config, set, errors, environment } ) {
 
 			<div className="lbf-add-actions">
 				<span>{ __( 'Add action:', 'libreforms' ) }</span>
-				{ Object.entries( ACTION_TYPES ).map( ( [ type, meta ] ) => (
+				{ Object.entries( types ).map( ( [ type, meta ] ) => (
 					<Button key={ type } variant="secondary" icon={ meta.icon } onClick={ () => add( type ) }>
 						{ meta.label }
 					</Button>
@@ -209,7 +253,7 @@ function Actions( { config, set, errors, environment } ) {
 
 export function formSections( { config, set, errors, environment, slug, setSlug, isNew } ) {
 	const syncSlug = followSlug( { slug, setSlug, isNew, maxLength: 64, previous: config.title } );
-	const formEnvironment = { ...environment, field_types: ( environment.field_types || [] ).filter( ( type ) => data.types.includes( type.type ) ) };
+	const formEnvironment = { ...environment, field_types: [ ...( environment.field_types || [] ), ...( data.formTypes || [] ) ].filter( ( type ) => data.types.includes( type.type ) ) };
 	const fields = config.fields || [];
 
 	return [

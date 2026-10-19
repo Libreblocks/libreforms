@@ -2,6 +2,7 @@
  * LibreForms admin app: Forms (list + editor, shared with LibreForge) and Entries.
  */
 import apiFetch from '@wordpress/api-fetch';
+import domReady from '@wordpress/dom-ready';
 import { Button, Notice, SelectControl, Spinner } from '@wordpress/components';
 import { createRoot, Fragment, useEffect, useState } from '@wordpress/element';
 import { __, _n, sprintf } from '@wordpress/i18n';
@@ -224,8 +225,11 @@ function App( { section } ) {
 	);
 }
 
-const mount = document.getElementById( 'libreforms-app' );
+// After every script loaded, so other plugins can add their action types first.
+domReady( () => {
+	const mount = document.getElementById( 'libreforms-app' );
 
-if ( mount ) {
-	createRoot( mount ).render( <App section={ mount.dataset.section } /> );
-}
+	if ( mount ) {
+		createRoot( mount ).render( <App section={ mount.dataset.section } /> );
+	}
+} );

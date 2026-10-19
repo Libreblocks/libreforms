@@ -22,11 +22,34 @@ final class FormKind extends Kind {
 	public const FRONT_TYPES = [ 'text', 'textarea', 'wysiwyg', 'number', 'email', 'url', 'date', 'time', 'datetime', 'select', 'radio', 'checkbox', 'switch', 'color', 'media', 'html' ];
 
 	/** Names used by the form itself (hidden inputs). */
-	public const RESERVED_NAMES = [ 'action', 'lbforms_id', '_lbf_t', '_lbf_ref', '_lbf_nonce', 'lbf_website', '_page', '_wpnonce' ];
+	public const RESERVED_NAMES = [ 'action', 'lbforms_id', '_lbf_t', '_lbf_ref', '_lbf_nonce', 'lbf_website', '_page', '_wpnonce', '_lbf_object' ];
+
+	/** Submission details an e-mail can list at the end (the visitor never types them). */
+	public const META = [ 'date', 'time', 'page_url', 'item', 'user', 'user_agent', 'ip', 'form' ];
+
+	public const META_DEFAULT = [ 'date', 'time', 'page_url' ];
 
 	public const ACTIONS = [ 'save_entry', 'email', 'create_post', 'webhook', 'redirect' ];
 
-	public function __construct( private FieldList $fields ) {}
+	/** @var callable(): array<string, ActionType> */
+	private $types;
+
+	/**
+	 * @param callable(): array<string, ActionType>|null $types Actions added by other plugins.
+	 */
+	public function __construct( private FieldList $fields, ?callable $types = null ) {
+		$this->types = $types ?? static fn() => [];
+	}
+
+	/**
+	 * Field types a visitor can fill in, including the ones added by other plugins
+	 * (filter "libreforms/front_types").
+	 *
+	 * @return string[]
+	 */
+	public static function front_types(): array {
+		return array_values( array_unique( (array) apply_filters( 'libreforms/front_types', self::FRONT_TYPES ) ) );
+	}
 
 	public function id(): string {
 		return self::ID;
@@ -65,7 +88,7 @@ final class FormKind extends Kind {
 				$errors[ 'fields.' . $index ] = sprintf( __( 'The name "%s" is used by the form itself. Choose another one.', 'libreforms' ), $field['name'] );
 			}
 
-			if ( ! in_array( $field['type'], self::FRONT_TYPES, true ) && ! isset( $errors[ 'fields.' . $index ] ) ) {
+			if ( ! in_array( $field['type'], self::front_types(), true ) && ! isset( $errors[ 'fields.' . $index ] ) ) {
 				/* translators: %s: field label */
 				$errors[ 'fields.' . $index ] = sprintf( __( 'The field "%s" uses a type that forms do not support yet.', 'libreforms' ), $field['label'] ?: $field['name'] );
 			}
@@ -83,6 +106,13 @@ final class FormKind extends Kind {
 			if ( 'webhook' === $action['type'] && ! wp_http_validate_url( (string) $action['url'] ) ) {
 				$errors[ 'actions.' . $index ] = __( 'The webhook needs a valid address (https://…).', 'libreforms' );
 			}
+
+			$extra = ( $this->types )()[ $action['type'] ] ?? null;
+			$error = $extra ? $extra->validate( (array) ( $action['settings'] ?? [] ), $definition ) : null;
+
+			if ( null !== $error ) {
+				$errors[ 'actions.' . $index ] = $error;
+			}
 		}
 
 		return $errors;
@@ -95,8 +125,10 @@ final class FormKind extends Kind {
 	private function actions( $input ): array {
 		$clean = [];
 
+		$extra = ( $this->types )();
+
 		foreach ( is_array( $input ) ? $input : [] as $action ) {
-			if ( ! is_array( $action ) || ! in_array( $action['type'] ?? '', self::ACTIONS, true ) ) {
+			if ( ! is_array( $action ) || ! ( in_array( $action['type'] ?? '', self::ACTIONS, true ) || isset( $extra[ $action['type'] ?? '' ] ) ) ) {
 				continue;
 			}
 
@@ -109,6 +141,7 @@ final class FormKind extends Kind {
 				'subject'       => sanitize_text_field( (string) ( $action['subject'] ?? '' ) ),
 				'message'       => wp_kses_post( (string) ( $action['message'] ?? '' ) ),
 				'reply_to'      => sanitize_key( (string) ( $action['reply_to'] ?? '' ) ),
+				'meta'          => array_key_exists( 'meta', $action ) ? array_values( array_intersect( self::META, (array) $action['meta'] ) ) : self::META_DEFAULT,
 				// Create post.
 				'post_type'     => sanitize_key( (string) ( $action['post_type'] ?? '' ) ),
 				'status'        => in_array( $status, [ 'publish', 'pending', 'draft', 'private' ], true ) ? $status : 'pending',
@@ -118,6 +151,8 @@ final class FormKind extends Kind {
 				'save_meta'     => ! empty( $action['save_meta'] ) || ! array_key_exists( 'save_meta', $action ),
 				// Webhook / redirect.
 				'url'           => esc_url_raw( (string) ( $action['url'] ?? '' ) ),
+				// Actions added by other plugins keep their own settings here.
+				'settings'      => isset( $extra[ $action['type'] ] ) ? $extra[ $action['type'] ]->sanitize( is_array( $action['settings'] ?? null ) ? $action['settings'] : [] ) : [],
 			];
 		}
 

@@ -24,10 +24,30 @@ final class Submission {
 
 	private const MAX_UPLOAD_MB = 8;
 
-	/** @var array{form: Definition, fields: Field[], values: array<string, mixed>, post_id: int}|null */
-	private static ?array $current = null;
+	private static ?SubmissionContext $current = null;
+
+	/** @var array<string, ActionType> Actions added by other plugins. */
+	private array $types = [];
 
 	public function __construct( private Forms $forms, private Entries $entries, private Tokens $tokens ) {}
+
+	public function register( ActionType $type ): void {
+		$this->types[ $type->type() ] = $type;
+	}
+
+	/**
+	 * @return array<string, ActionType>
+	 */
+	public function types(): array {
+		return $this->types;
+	}
+
+	/**
+	 * The submission being processed (null outside of it).
+	 */
+	public static function current(): ?SubmissionContext {
+		return self::$current;
+	}
 
 	public function hook(): void {
 		add_action( 'libreblocks/tokens/register', [ $this, 'register_tokens' ] );
@@ -91,33 +111,41 @@ final class Submission {
 			}
 		}
 
-		self::$current = [ 'form' => $form, 'fields' => $fields, 'values' => $values, 'post_id' => 0 ];
+		$object  = $this->object( (int) ( $input[ View::OBJECT ] ?? 0 ) );
+		$context       = new SubmissionContext( $form, $fields, $values, $object ? $object->ID : 0 );
+		$context->meta = $this->meta( $form, $input, $object );
+		$actions = array_values( array_filter( (array) $form->get( 'actions', [] ), fn( $action ) => $this->known( (string) ( $action['type'] ?? '' ) ) ) );
+
+		// Actions added by other plugins can still refuse the submission (e.g. dates already booked).
+		foreach ( $actions as $action ) {
+			if ( isset( $this->types[ $action['type'] ] ) ) {
+				$errors += $this->types[ $action['type'] ]->check( (array) ( $action['settings'] ?? [] ), $context );
+			}
+		}
+
+		if ( $errors ) {
+			return $fail( __( 'Please check the highlighted fields.', 'libreforms' ), $errors );
+		}
+
+		self::$current = $context;
 		$redirect      = '';
 
-		try {
-			$actions = (array) $form->get( 'actions', [] );
+		// Answers can also use the item of the page ({{object.meta|...}} in the e-mail).
+		if ( $object ) {
+			libreblocks()->context()->push( $object );
+		}
 
-			// Create the post first, so later actions (e-mail, entry) can mention it.
+		try {
+			// "Create a post" and early actions first, so later actions (e-mail, entry) can mention their result.
 			foreach ( $actions as $action ) {
-				if ( 'create_post' === $action['type'] ) {
-					self::$current['post_id'] = $this->create_post( $action, $fields, $values );
+				if ( $this->is_early( $action['type'] ) ) {
+					$this->run( $action, $context, $input, $redirect );
 				}
 			}
 
 			foreach ( $actions as $action ) {
-				switch ( $action['type'] ) {
-					case 'save_entry':
-						$this->entries->add( $form->id, $values + [ '_page' => esc_url_raw( (string) ( $input['_lbf_ref'] ?? '' ) ) ], self::$current['post_id'], Protection::visitor() );
-						break;
-					case 'email':
-						$this->email( $action, $fields, $values );
-						break;
-					case 'webhook':
-						$this->webhook( $form, $action, $fields, $values );
-						break;
-					case 'redirect':
-						$redirect = esc_url_raw( (string) $this->tokens->render( (string) $action['url'] ) );
-						break;
+				if ( ! $this->is_early( $action['type'] ) ) {
+					$this->run( $action, $context, $input, $redirect );
 				}
 			}
 
@@ -127,15 +155,69 @@ final class Submission {
 			 * @param Definition           $form
 			 * @param array<string, mixed> $values
 			 * @param int                  $post_id Post created by the form (0 = none).
+			 * @param SubmissionContext    $context
 			 */
-			do_action( 'libreforms/submitted', $form, $values, self::$current['post_id'] );
+			do_action( 'libreforms/submitted', $form, $values, $context->post_id, $context );
 
 			$message = $this->success_message( $form );
 		} finally {
 			self::$current = null;
+
+			if ( $object ) {
+				libreblocks()->context()->pop();
+			}
 		}
 
 		return [ 'success' => true, 'message' => $message, 'errors' => [], 'redirect' => $redirect, 'values' => [] ];
+	}
+
+	/**
+	 * @param array<string, mixed> $action
+	 * @param array<string, mixed> $input
+	 */
+	private function run( array $action, SubmissionContext $context, array $input, string &$redirect ): void {
+		switch ( $action['type'] ) {
+			case 'create_post':
+				$context->post_id = $this->create_post( $action, $context->fields, $context->values );
+				return;
+			case 'save_entry':
+				$this->entries->add( $context->form->id, $context->values + [ '_page' => esc_url_raw( (string) ( $input['_lbf_ref'] ?? '' ) ) ], $context->post_id, Protection::visitor() );
+				return;
+			case 'email':
+				$this->email( $action, $context );
+				return;
+			case 'webhook':
+				$this->webhook( $context->form, $action, $context->fields, $context->values );
+				return;
+			case 'redirect':
+				$redirect = esc_url_raw( (string) $this->tokens->render( (string) $action['url'] ) );
+				return;
+		}
+
+		if ( isset( $this->types[ $action['type'] ] ) ) {
+			$this->types[ $action['type'] ]->run( (array) ( $action['settings'] ?? [] ), $context );
+		}
+	}
+
+	private function known( string $type ): bool {
+		return in_array( $type, FormKind::ACTIONS, true ) || isset( $this->types[ $type ] );
+	}
+
+	private function is_early( string $type ): bool {
+		return 'create_post' === $type || ( isset( $this->types[ $type ] ) && $this->types[ $type ]->early() );
+	}
+
+	/**
+	 * The item of the page where the form was placed, when visitors may see it.
+	 */
+	private function object( int $id ): ?\WP_Post {
+		$post = $id > 0 ? get_post( $id ) : null;
+
+		if ( ! $post instanceof \WP_Post || ( 'publish' !== $post->post_status && ! current_user_can( 'read_post', $post->ID ) ) ) {
+			return null;
+		}
+
+		return $post;
 	}
 
 	/* ------------------------------------------------------------------ actions */
@@ -153,7 +235,7 @@ final class Submission {
 		$post_id = wp_insert_post( [
 			'post_type'    => (string) $action['post_type'],
 			'post_status'  => (string) $action['status'],
-			'post_title'   => sanitize_text_field( (string) ( $values[ $title_field ] ?? '' ) ) ?: sprintf( '%s — %s', self::$current['form']->title(), wp_date( 'd/m/Y H:i' ) ),
+			'post_title'   => sanitize_text_field( (string) ( $values[ $title_field ] ?? '' ) ) ?: sprintf( '%s — %s', self::$current->form->title(), wp_date( 'd/m/Y H:i' ) ),
 			'post_content' => wp_kses_post( (string) ( $values[ $content_field ] ?? '' ) ),
 			'post_author'  => get_current_user_id(),
 		], true );
@@ -192,15 +274,18 @@ final class Submission {
 	 * @param Field[]              $fields
 	 * @param array<string, mixed> $values
 	 */
-	private function email( array $action, array $fields, array $values ): void {
-		$to = array_filter( array_map( 'trim', explode( ',', (string) $this->tokens->render( (string) $action['to'] ) ) ), 'is_email' );
+	private function email( array $action, SubmissionContext $context ): void {
+		$fields = $context->fields;
+		$values = $context->values;
+		$to     = array_filter( array_map( 'trim', explode( ',', (string) $this->tokens->render( (string) $action['to'] ) ) ), 'is_email' );
 
 		if ( ! $to ) {
 			return;
 		}
 
-		$subject = (string) $this->tokens->render( (string) $action['subject'] ) ?: sprintf( /* translators: %s: form title */ __( 'New submission: %s', 'libreforms' ), self::$current['form']->title() );
+		$subject = (string) $this->tokens->render( (string) $action['subject'] ) ?: sprintf( /* translators: %s: form title */ __( 'New submission: %s', 'libreforms' ), $context->form->title() );
 		$message = trim( (string) $action['message'] ) ? wpautop( (string) $this->tokens->render( (string) $action['message'] ) ) : $this->table( $fields, $values );
+		$message .= $this->meta_block( (array) ( $action['meta'] ?? FormKind::META_DEFAULT ), $context );
 		$headers = [ 'Content-Type: text/html; charset=UTF-8' ];
 		$reply   = (string) ( $values[ (string) $action['reply_to'] ] ?? '' );
 
@@ -233,20 +318,80 @@ final class Submission {
 				'form'    => [ 'id' => $form->id, 'slug' => $form->slug, 'title' => $form->title() ],
 				'values'  => $values,
 				'labels'  => $labels,
-				'post_id' => self::$current['post_id'],
+				'post_id' => self::$current->post_id,
+				'meta'    => self::$current->meta,
 				'site'    => home_url(),
 				'date'    => gmdate( 'c' ),
 			] ),
 		] );
 	}
 
+	/**
+	 * What the visitor did not type but the site owner wants to know.
+	 *
+	 * @param array<string, mixed> $input
+	 * @return array<string, string>
+	 */
+	private function meta( Definition $form, array $input, ?\WP_Post $object ): array {
+		$user = wp_get_current_user();
+		$page = (string) wp_validate_redirect( esc_url_raw( (string) ( $input['_lbf_ref'] ?? '' ) ), '' );
+
+		return [
+			'date'       => wp_date( (string) get_option( 'date_format' ) ?: 'd/m/Y' ),
+			'time'       => wp_date( (string) get_option( 'time_format' ) ?: 'H:i' ),
+			'page_url'   => $page,
+			'item'       => $object ? get_the_title( $object ) : '',
+			'user'       => $user && $user->ID ? (string) $user->display_name : '',
+			'user_agent' => isset( $_SERVER['HTTP_USER_AGENT'] ) ? mb_substr( sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ), 0, 300 ) : '',
+			'ip'         => isset( $_SERVER['REMOTE_ADDR'] ) ? (string) filter_var( wp_unslash( $_SERVER['REMOTE_ADDR'] ), FILTER_VALIDATE_IP ) : '',
+			'form'       => $form->title(),
+		];
+	}
+
+	/**
+	 * @return array<string, string> Labels of the submission details.
+	 */
+	public static function meta_labels(): array {
+		return [
+			'date'       => __( 'Date', 'libreforms' ),
+			'time'       => __( 'Time', 'libreforms' ),
+			'page_url'   => __( 'Page URL', 'libreforms' ),
+			'item'       => __( 'Item of the page', 'libreforms' ),
+			'user'       => __( 'Logged-in user', 'libreforms' ),
+			'user_agent' => __( 'Browser (user agent)', 'libreforms' ),
+			'ip'         => __( 'IP address', 'libreforms' ),
+			'form'       => __( 'Form name', 'libreforms' ),
+		];
+	}
+
+	/**
+	 * The chosen details, below the answers.
+	 *
+	 * @param string[] $keys
+	 */
+	private function meta_block( array $keys, SubmissionContext $context ): string {
+		$rows = '';
+
+		foreach ( self::meta_labels() as $key => $label ) {
+			$value = $context->meta[ $key ] ?? '';
+
+			if ( in_array( $key, $keys, true ) && '' !== $value ) {
+				$shown = 'page_url' === $key ? '<a href="' . esc_url( $value ) . '">' . esc_html( $value ) . '</a>' : esc_html( $value );
+				$rows .= '<tr><th align="left" style="padding:3px 12px 3px 0;vertical-align:top;font-weight:normal">' . esc_html( $label ) . ':</th><td style="padding:3px 0">' . $shown . '</td></tr>';
+			}
+		}
+
+		return '' === $rows ? '' : '<hr style="margin:20px 0;border:0;border-top:1px solid #ddd" /><table cellspacing="0" cellpadding="0" style="color:#666;font-size:13px">' . $rows . '</table>';
+	}
+
 	/* ------------------------------------------------------------------ tokens */
 
 	public function register_tokens( Tokens $tokens ): void {
 		$tokens->add( new Token( 'form.value', fn( $name ) => $this->display( (string) $name ), __( 'Value sent in the form', 'libreforms' ), __( 'Field name', 'libreforms' ) ) );
-		$tokens->add( new Token( 'form.all', fn() => self::$current ? $this->table( self::$current['fields'], self::$current['values'] ) : '', __( 'Every value sent, as a table', 'libreforms' ) ) );
-		$tokens->add( new Token( 'form.title', fn() => self::$current ? self::$current['form']->title() : '', __( 'Form title', 'libreforms' ) ) );
-		$tokens->add( new Token( 'form.post_url', fn() => self::$current && self::$current['post_id'] ? (string) get_permalink( self::$current['post_id'] ) : '', __( 'Address of the post created by the form', 'libreforms' ) ) );
+		$tokens->add( new Token( 'form.all', fn() => self::$current ? $this->table( self::$current->fields, self::$current->values ) : '', __( 'Every value sent, as a table', 'libreforms' ) ) );
+		$tokens->add( new Token( 'form.meta', fn( $key ) => self::$current ? (string) ( self::$current->meta[ (string) $key ] ?? '' ) : '', __( 'Submission detail (date, time, page_url, ip, user_agent…)', 'libreforms' ), __( 'Detail', 'libreforms' ) ) );
+		$tokens->add( new Token( 'form.title', fn() => self::$current ? self::$current->form->title() : '', __( 'Form title', 'libreforms' ) ) );
+		$tokens->add( new Token( 'form.post_url', fn() => self::$current && self::$current->post_id ? (string) get_permalink( self::$current->post_id ) : '', __( 'Address of the post created by the form', 'libreforms' ) ) );
 	}
 
 	/**
@@ -257,9 +402,9 @@ final class Submission {
 			return '';
 		}
 
-		foreach ( self::$current['fields'] as $field ) {
+		foreach ( self::$current->fields as $field ) {
 			if ( $field->name === $name ) {
-				$value = self::$current['values'][ $name ] ?? '';
+				$value = self::$current->values[ $name ] ?? '';
 
 				if ( 'media' === $field->type ) {
 					return (int) $value ? (string) wp_get_attachment_url( (int) $value ) : '';

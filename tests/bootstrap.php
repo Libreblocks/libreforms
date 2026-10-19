@@ -81,3 +81,5 @@ if ( ! class_exists( 'WP_Error' ) ) {
 		public function get_error_message() { return $this->message; }
 	}
 }
+function get_post( $post = null ) { return is_object( $post ) ? $post : ( WPStub::$registered['posts'][ (int) $post ] ?? null ); }
+function wp_validate_redirect( $location, $fallback = '' ) { return 0 === strpos( (string) $location, 'https://example.test' ) ? $location : $fallback; }

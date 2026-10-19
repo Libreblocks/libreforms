@@ -5,7 +5,7 @@ Requires at least: 6.6
 Tested up to: 7.1
 Requires PHP: 8.0
 Requires Plugins: libreblocks-core, libreforge
-Stable tag: 0.1.0
+Stable tag: 0.2.0
 License: GPLv2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -32,6 +32,11 @@ Also:
 Requires LibreBlocks Core and LibreForge.
 
 == Changelog ==
+
+= 0.2.0 =
+* Other plugins can add field types and actions to forms (used by LibreStay: "Check-in and check-out" field and "Create booking" action).
+* Forms know the item of the page where they are placed; e-mails can use {{object.*}} tokens.
+* E-mails can list submission details the visitor does not type: date, time, page URL, item, user, browser, IP and form name (you choose which). Also as {{form.meta|...}} tokens and in webhooks.
 
 = 0.1.0 =
 * First release: form builder, actions (entry, e-mail, create post, webhook, redirect), entries screen with CSV export, block, Elementor widget and shortcode.

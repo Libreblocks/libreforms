@@ -89,7 +89,9 @@ final class Screens {
 				[ 'key' => 'entries', 'label' => __( 'Entries', 'libreforms' ), 'href' => self::entries_url(), 'icon' => 'email-alt' ],
 			],
 			'forms'      => $forms,
-			'types'      => FormKind::FRONT_TYPES,
+			'types'      => FormKind::front_types(),
+			// Types only for forms (hidden from Meta Boxes by LibreForge).
+			'formTypes'  => array_values( array_filter( $this->core->fields()->describe(), fn( array $type ) => 'form' === $type['category'] ) ),
 			'adminEmail' => (string) get_option( 'admin_email' ),
 			'entriesUrl' => self::entries_url(),
 		] ) . ';', 'before' );

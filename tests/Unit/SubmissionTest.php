@@ -59,12 +59,14 @@ final class SubmissionTest extends TestCase {
 			'actions'         => [
 				[ 'type' => 'save_entry' ],
 				[ 'type' => 'email', 'to' => 'equipe@example.test, {{form.value|email}}', 'subject' => 'Contato de {{form.value|nome}} ({{form.value|assunto}})', 'reply_to' => 'email' ],
+				[ 'type' => 'email', 'to' => 'ti@example.test', 'subject' => 'IP {{form.meta|ip}}', 'message' => 'Só detalhes', 'meta' => [ 'ip' ] ],
 				[ 'type' => 'create_post', 'post_type' => 'imovel', 'title_field' => 'nome', 'content_field' => 'mensagem' ],
 				[ 'type' => 'webhook', 'url' => 'https://hooks.example.test/n8n' ],
 			],
 		] );
 
-		$result = $this->submission->process( $form, $this->input( [ 'nome' => 'Ana', 'email' => 'ana@example.test', 'assunto' => 'compra', 'mensagem' => 'Olá' ] ), [] );
+		$_SERVER['REMOTE_ADDR'] = '203.0.113.9';
+		$result = $this->submission->process( $form, $this->input( [ 'nome' => 'Ana', 'email' => 'ana@example.test', 'assunto' => 'compra', 'mensagem' => 'Olá', '_lbf_ref' => 'https://example.test/contato/' ] ), [] );
 
 		$this->assertTrue( $result['success'], (string) $result['message'] );
 		$this->assertSame( 'Obrigado, Ana!', $result['message'] );
@@ -82,6 +84,13 @@ final class SubmissionTest extends TestCase {
 		$this->assertContains( 'Reply-To: ana@example.test', $mail['headers'] );
 		$this->assertStringContainsString( '<th', $mail['message'], 'Empty message = table of answers.' );
 		$this->assertStringNotContainsString( 'Empresa', $mail['message'], 'Hidden fields are left out.' );
+		$this->assertStringContainsString( 'https://example.test/contato/', $mail['message'], 'Page URL listed by default.' );
+		$this->assertStringContainsString( 'Date:', $mail['message'] );
+		$this->assertStringNotContainsString( '203.0.113.9', $mail['message'], 'IP only when chosen.' );
+
+		$this->assertSame( 'IP 203.0.113.9', FormsStub::$mails[1]['subject'] );
+		$this->assertStringContainsString( '203.0.113.9', FormsStub::$mails[1]['message'] );
+		$this->assertStringNotContainsString( 'Date:', FormsStub::$mails[1]['message'], 'Only the chosen details.' );
 
 		$body = json_decode( FormsStub::$webhooks[0]['body'], true );
 		$this->assertSame( 'https://hooks.example.test/n8n', FormsStub::$webhooks[0]['url'] );
@@ -132,6 +141,40 @@ final class SubmissionTest extends TestCase {
 
 		FormsStub::$logged_in = true;
 		$this->assertTrue( $this->submission->process( $form, $this->input( [ 'nome' => 'Ana', 'email' => 'ana@example.test' ] ), [] )['success'] );
+	}
+
+	public function test_actions_added_by_other_plugins(): void {
+		$extra = new class() implements LibreBlocks\Forms\ActionType {
+			public array $log = [];
+			public function type(): string { return 'reserve'; }
+			public function early(): bool { return true; }
+			public function sanitize( array $settings ): array { return [ 'limit' => (int) ( $settings['limit'] ?? 0 ) ]; }
+			public function validate( array $settings, Definition $form ): ?string { return $settings['limit'] > 0 ? null : 'Set a limit.'; }
+			public function check( array $settings, LibreBlocks\Forms\SubmissionContext $context ): array {
+				return 'Bloqueado' === $context->value( 'nome' ) ? [ 'nome' => 'Taken.' ] : [];
+			}
+			public function run( array $settings, LibreBlocks\Forms\SubmissionContext $context ): void {
+				$this->log[]             = 'run';
+				$context->data['reserve'] = 'R-' . $settings['limit'];
+			}
+		};
+
+		$this->submission->register( $extra );
+		$this->kind = new FormKind( new FieldList( libreblocks()->fields() ), fn() => $this->submission->types() );
+
+		$form = $this->form( [ 'actions' => [ [ 'type' => 'email', 'to' => 'a@example.test', 'subject' => 'x' ], [ 'type' => 'reserve', 'settings' => [ 'limit' => '3', 'junk' => 1 ] ] ] ] );
+
+		$this->assertSame( [ 'limit' => 3 ], $form->get( 'actions' )[1]['settings'], 'Settings cleaned by the action itself.' );
+		$this->assertSame( [], $this->kind->validate( $form, $this->repository ) );
+
+		$blocked = $this->submission->process( $form, $this->input( [ 'nome' => 'Bloqueado', 'email' => 'ana@example.test' ] ), [] );
+		$this->assertFalse( $blocked['success'] );
+		$this->assertSame( [ 'nome' => 'Taken.' ], $blocked['errors'] );
+		$this->assertSame( [], FormsStub::$mails, 'Nothing runs when check() refuses.' );
+
+		$this->assertTrue( $this->submission->process( $form, $this->input( [ 'nome' => 'Ana', 'email' => 'ana@example.test' ] ), [] )['success'] );
+		$this->assertSame( [ 'run' ], $extra->log );
+		$this->assertCount( 1, FormsStub::$mails );
 	}
 
 	public function test_kind_validation(): void {

@@ -41,9 +41,11 @@ final class Forms {
 	 * @return Field[]
 	 */
 	public function fields( Definition $form ): array {
+		$types = FormKind::front_types();
+
 		return array_values( array_filter(
 			$this->registry->make_all( (array) $form->get( 'fields', [] ) ),
-			fn( Field $field ) => in_array( $field->type, FormKind::FRONT_TYPES, true )
+			fn( Field $field ) => in_array( $field->type, $types, true )
 		) );
 	}
 

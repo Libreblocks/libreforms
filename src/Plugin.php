@@ -43,7 +43,7 @@ final class Plugin {
 
 		$this->core = $core;
 
-		$forge->register_kind( new FormKind( $forge->field_list() ) );
+		$forge->register_kind( new FormKind( $forge->field_list(), fn() => $this->submission->types() ) );
 		$core->schema()->register_table( Entries::TABLE, Entries::columns(), self::SCHEMA_VERSION, 'libreforms' );
 
 		if ( $core->schema()->pending() ) {
@@ -76,6 +76,13 @@ final class Plugin {
 		add_action( 'init', fn() => load_plugin_textdomain( 'libreforms', false, dirname( plugin_basename( LIBREFORMS_FILE ) ) . '/languages' ), 0 );
 
 		/**
+		 * Other plugins add their actions here: $forms->register_action( new MyAction() ).
+		 *
+		 * @param Plugin $forms
+		 */
+		do_action( 'libreforms/register', $this );
+
+		/**
 		 * Fires when LibreForms is ready.
 		 *
 		 * @param Plugin $forms
@@ -85,6 +92,10 @@ final class Plugin {
 
 	public function activate(): void {
 		$this->core?->schema()->install();
+	}
+
+	public function register_action( ActionType $type ): void {
+		$this->submission->register( $type );
 	}
 
 	public function forms(): Forms {

@@ -503,3 +503,34 @@ msgid "%d new"
 msgid_plural "%d new"
 msgstr[0] "%d nova"
 msgstr[1] "%d novas"
+
+# LibreForms 0.2.0
+msgid "Browser (user agent)"
+msgstr "Navegador (user agent)"
+
+msgid "Detail"
+msgstr "Detalhe"
+
+msgid "IP address"
+msgstr "Endereço IP"
+
+msgid "Item of the page"
+msgstr "Item da página"
+
+msgid "Listed at the end of the e-mail. The visitor does not fill them in. The IP address is personal data: only include it if you need it."
+msgstr "Listados no final do e-mail. O visitante não preenche esses dados. O endereço IP é um dado pessoal (LGPD): inclua só se precisar."
+
+msgid "Logged-in user"
+msgstr "Usuário logado"
+
+msgid "Page URL"
+msgstr "URL da página"
+
+msgid "Submission detail (date, time, page_url, ip, user_agent…)"
+msgstr "Detalhe do envio (date, time, page_url, ip, user_agent…)"
+
+msgid "Submission details"
+msgstr "Dados do envio"
+
+msgid "Time"
+msgstr "Hora"
