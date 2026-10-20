@@ -1,0 +1,7 @@
+node_modules/
+build/
+vendor/
+*.log
+.phpunit.result.cache
+.DS_Store
+Thumbs.db
